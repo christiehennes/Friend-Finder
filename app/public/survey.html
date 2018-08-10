@@ -33,7 +33,34 @@
         </form>
 
         <div id="main-questions"></div>
-        <button class="btn btn-lg btn-primary" id="submit-button">Submit</button>
+        <!-- Button trigger modal -->
+        <button type="button" class="btn btn-lg btn-primary" data-toggle="modal" data-target="#exampleModalCenter" id="submit-button">
+        Submit
+      </button>
+      <!-- Modal -->
+      <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">You Matched With...</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                </div>
+                <div class="modal-body">
+                    <h6 class="friend-name"></h6>
+                    <img scr="" class="friend-image" style="max-width:90%" >
+                    
+               
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+            </div>
+        </div>
+      
+
     </div>
 
 
@@ -53,7 +80,10 @@
             "You feel more energetic after spending time with a group of people."
         ]
 
+        let mostCompatible = '';
 
+
+        //FUNCTIONS
 
         function createQuestions(){
 
@@ -88,12 +118,55 @@
 
         }
 
+        function comparePeople(person1, person2){
+            let score = 0;
+            for(let i=0; i< questionsArray.length; i++){
+                score += compareScore(person1.scores[i], person2.scores[i]);
+            }
+            // console.log("SCORE: " + score);
+            return score;
+        }
+
+        function compareScore(num1, num2){
+
+            // console.log("Individual score: " + Math.abs(num1-num2));
+            return Math.abs(num1-num2);
+        }
+
+        Array.min = function(array){
+            return Math.min.apply(Math, array);
+        };
+
+        function showModal(friend)
+        {
+            //you can do anything with data, or pass more data to this function. i set this data to modal header for example
+
+            let body = `
+            <h6>${friend.name}</h6>
+            <img scr ="${friend.image}">`;
+
+            
+
+            console.log(friend.photo);
+
+            console.log("Friend name in the modal: " + friend.name);
+
+
+            // $(".modal-title").html(friend.name)
+            $(".friend-name").html(friend.name);
+            $('.friend-image').attr('src', friend.photo);
+            // $("#exampleModalCenter").modal();
+        }
+
+
         
         
         
         //Logic for the page 
+
         createQuestions();
 
+        //Submit button handler 
         $(document).on('click', '#submit-button', function(){
             console.log("button was pressed");
 
@@ -106,8 +179,6 @@
 
                 let selectedOption = parseInt( $(`#${i}`).find("option:selected").val() ) ;
                 answersArray.push(selectedOption);
-                console.log(selectedOption);
-
             }
             
             //Create the friend object 
@@ -118,11 +189,44 @@
                
             };
 
+            //Pull all the previous friend objects and compare for compatibility 
+
+            $.get("/api/friends", function(data){
+
+                let allFriends = data;
+
+                let friendScores = [];
+
+                // console.log("All friends: " + JSON.stringify(allFriends)) ;
+                allFriends.forEach(function (friend){
+
+                    let curScore = comparePeople(currentFriend, friend);
+                    friendScores.push(curScore);
+
+                })
+
+                console.log("Friend Scores Array: " + friendScores);
+                let minScore = Array.min(friendScores); //Find the lowest comparison in the array
+
+                console.log("Min score: " + minScore);
+                let minIndex = friendScores.findIndex(function(element){
+                    return element === minScore;
+                }); //Find the index of the object of the lowest score
+
+                console.log("This is the most compatible: " + JSON.stringify(allFriends[minIndex]));
+
+                mostCompatible = allFriends[minIndex];
+            })
+
             //Post the friend object 
             $.post("/api/friends", currentFriend, function(data){
                 console.log("posted the friend");
+            }).then(function(){
+               showModal(mostCompatible);
             });
-        
+
+
+
 
         });
 
