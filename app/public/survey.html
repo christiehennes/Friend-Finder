@@ -13,7 +13,6 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
-
 </head>
 <body>
 
@@ -24,16 +23,17 @@
 
         <form>
             <div class="form-group">
-                <label for="formGroupExampleInput">Example label</label>
-                <input type="text" class="form-control" id="formGroupExampleInput" placeholder="Example input">
+                <label for="formGroupExampleInput">Name</label>
+                <input type="text" class="form-control" id="name-field" placeholder="Example input">
             </div>
             <div class="form-group">
-                <label for="formGroupExampleInput2">Another label</label>
-                <input type="text" class="form-control" id="formGroupExampleInput2" placeholder="Another input">
+                <label for="formGroupExampleInput2">Picture</label>
+                <input type="text" class="form-control" id="image-field" placeholder="Another input">
             </div>
         </form>
 
         <div id="main-questions"></div>
+        <button class="btn btn-lg btn-primary" id="submit-button">Submit</button>
     </div>
 
 
@@ -68,12 +68,12 @@
                     <h5>${questionsArray[i]}</h5>
 
                     <div class="form-group">
-                        <select class="form-control" id="exampleFormControlSelect1">
-                            <option>1 (Strongly Disagree)</option>
-                            <option>2</option>
-                            <option>3</option>
-                            <option>4</option>
-                            <option>5 (Strongly Agree)</option>
+                        <select class="form-control" id="${i}">
+                            <option value="1">1 (Strongly Disagree)</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5 (Strongly Agree)</option>
                         </select>
                     </div>
                     <br>
@@ -88,13 +88,50 @@
 
         }
 
-    createQuestions();
+        
+        
+        
+        //Logic for the page 
+        createQuestions();
+
+        $(document).on('click', '#submit-button', function(){
+            console.log("button was pressed");
+
+            //Declare variables for the friend object 
+            let name = $('#name-field').val().trim();
+            let image = $('#image-field').val().trim();
+
+            let answersArray = [];
+            for(let i=0; i< questionsArray.length; i++){
+
+                let selectedOption = parseInt( $(`#${i}`).find("option:selected").val() ) ;
+                answersArray.push(selectedOption);
+                console.log(selectedOption);
+
+            }
+            
+            //Create the friend object 
+            let currentFriend = {
+                "name": name,
+                "photo": image,
+                "scores": answersArray
+               
+            };
+
+            //Post the friend object 
+            $.post("/api/friends", currentFriend, function(data){
+                console.log("posted the friend");
+            });
+        
+
+        });
 
     
     
     </script>
+      
       <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-      <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 </body>
