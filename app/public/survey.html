@@ -40,11 +40,11 @@
 
         <div id="main-questions"></div>
         <!-- Button trigger modal -->
-        <button type="button" class="btn btn-lg btn-primary" data-toggle="modal" data-target="#exampleModalCenter" id="submit-button">
+        <button type="button" class="btn btn-lg btn-primary"  data-target="#modal" id="submit-button">
         Submit
       </button>
       <!-- Modal -->
-      <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+      <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -89,7 +89,10 @@
         let mostCompatible = '';
 
 
-        //FUNCTIONS
+        // ================================================================================
+        // FUNCTION DECLARATIONS
+        // ================================================================================
+
 
         function createQuestions(){
 
@@ -139,12 +142,15 @@
             return Math.abs(num1-num2);
         }
 
+        //Extending the Array object to find a minimum value in an array
         Array.min = function(array){
             return Math.min.apply(Math, array);
         };
 
         function showModal(friend)
         {
+
+            console.log("Showing the modal");
             //you can do anything with data, or pass more data to this function. i set this data to modal header for example
 
             if (friend){
@@ -154,14 +160,15 @@
             else{
                 $(".friend-name").html("Oops! No friends yet!");
             }
+
+            $('#modal').modal('show');
             
         }
 
 
-        
-        
-        
-        //Logic for the page 
+        // ================================================================================
+        // APP LOGIC
+        // ================================================================================
 
         createQuestions();
 
@@ -173,58 +180,68 @@
             let name = $('#name-field').val().trim();
             let image = $('#image-field').val().trim();
 
-            let answersArray = [];
-            for(let i=0; i< questionsArray.length; i++){
-
-                let selectedOption = parseInt( $(`#${i}`).find("option:selected").val() ) ;
-                answersArray.push(selectedOption);
-            }
             
-            //Create the friend object 
-            let currentFriend = {
-                "name": name,
-                "photo": image,
-                "scores": answersArray
                
-            };
+            if (name && image){
 
-            //Pull all the previous friend objects and compare for compatibility 
+                let answersArray = [];
+                for(let i=0; i< questionsArray.length; i++){
 
-            $.get("/api/friends", function(data){
+                    let selectedOption = parseInt( $(`#${i}`).find("option:selected").val() ) ;
+                    answersArray.push(selectedOption);
+                }
+                
+                //Create the friend object 
+                let currentFriend = {
+                    "name": name,
+                    "photo": image,
+                    "scores": answersArray
+                
+                };
 
-                let allFriends = data;
+                //Pull all the previous friend objects and compare for compatibility 
 
-                let friendScores = [];
+                $.get("/api/friends", function(data){
 
-                // console.log("All friends: " + JSON.stringify(allFriends)) ;
-                allFriends.forEach(function (friend){
+                    let allFriends = data;
 
-                    let curScore = comparePeople(currentFriend, friend);
-                    friendScores.push(curScore);
+                    let friendScores = [];
 
+                    // console.log("All friends: " + JSON.stringify(allFriends)) ;
+                    allFriends.forEach(function (friend){
+
+                        let curScore = comparePeople(currentFriend, friend);
+                        friendScores.push(curScore);
+
+                    })
+
+                    console.log("Friend Scores Array: " + friendScores);
+                    let minScore = Array.min(friendScores); //Find the lowest comparison in the array
+
+                    console.log("Min score: " + minScore);
+                    let minIndex = friendScores.findIndex(function(element){
+                        return element === minScore;
+                    }); //Find the index of the object of the lowest score
+
+                    console.log("This is the most compatible: " + JSON.stringify(allFriends[minIndex]));
+
+                    mostCompatible = allFriends[minIndex];
                 })
 
-                console.log("Friend Scores Array: " + friendScores);
-                let minScore = Array.min(friendScores); //Find the lowest comparison in the array
+                //Post the friend object 
+                $.post("/api/friends", currentFriend, function(data){
+                    console.log("posted the friend");
+                }).then(function(){
+                    showModal(mostCompatible);
+                });
 
-                console.log("Min score: " + minScore);
-                let minIndex = friendScores.findIndex(function(element){
-                    return element === minScore;
-                }); //Find the index of the object of the lowest score
+            }
+            else{
+                console.log("empty params");
+                $("#modal").modal('hide');
+                alert("Please enter all fields!")
 
-                console.log("This is the most compatible: " + JSON.stringify(allFriends[minIndex]));
-
-                mostCompatible = allFriends[minIndex];
-            })
-
-            //Post the friend object 
-            $.post("/api/friends", currentFriend, function(data){
-                console.log("posted the friend");
-            }).then(function(){
-               showModal(mostCompatible);
-            });
-
-
+            }
 
 
         });
