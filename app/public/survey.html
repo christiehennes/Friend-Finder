@@ -16,20 +16,26 @@
 </head>
 <body>
 
-    <div class="container">
+    <div class="container mt-3 mb-5">
 
-        <div>This is the survey</div>
+            <div class="jumbotron jumbotron-fluid">
+                <div class="container">
+                    <h1 class="display-4">Friend Finder Survey</h1>
+                    <p class="lead">Take this survey to find out who you're most compatible with.</p>
+                </div>
+            </div>
 
 
-        <form>
+        <form id="form">
             <div class="form-group">
-                <label for="formGroupExampleInput">Name</label>
-                <input type="text" class="form-control" id="name-field" placeholder="Example input">
+                <label for="formGroupExampleInput"><h4>Name</h4></label>
+                <input type="text" class="form-control" id="name-field" placeholder="Enter name" name="name">
             </div>
             <div class="form-group">
-                <label for="formGroupExampleInput2">Picture</label>
-                <input type="text" class="form-control" id="image-field" placeholder="Another input">
+                <label for="formGroupExampleInput2"><h4>Photo</h4></label>
+                <input type="text" class="form-control" id="image-field" placeholder="URL to image of yourself" name="image">
             </div>
+            <br>
         </form>
 
         <div id="main-questions"></div>
@@ -141,21 +147,14 @@
         {
             //you can do anything with data, or pass more data to this function. i set this data to modal header for example
 
-            let body = `
-            <h6>${friend.name}</h6>
-            <img scr ="${friend.image}">`;
-
+            if (friend){
+                $(".friend-name").html(friend.name);
+                $('.friend-image').attr('src', friend.photo);
+            }
+            else{
+                $(".friend-name").html("Oops! No friends yet!");
+            }
             
-
-            console.log(friend.photo);
-
-            console.log("Friend name in the modal: " + friend.name);
-
-
-            // $(".modal-title").html(friend.name)
-            $(".friend-name").html(friend.name);
-            $('.friend-image').attr('src', friend.photo);
-            // $("#exampleModalCenter").modal();
         }
 
 
@@ -230,6 +229,7 @@
 
         });
 
+    
     
     
     </script>
