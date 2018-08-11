@@ -211,14 +211,17 @@
                     }); //Find the index of the object of the lowest score
 
                     mostCompatible = allFriends[minIndex];
-                })
 
-                //Post the friend object 
-                $.post("/api/friends", currentFriend, function(data){
-                    console.log("POST success!");
-                }).then(function(){
-                    showModal(mostCompatible);
+
+                    //Post the friend object 
+                    $.post("/api/friends", currentFriend, function(data){
+                        console.log("POST success!");
+                    }).then(function(){
+                        showModal(mostCompatible);
+                    });
                 });
+
+                
 
             }
             else{ //If name was not entered or a bad link, do not show modal
