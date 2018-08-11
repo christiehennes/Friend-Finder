@@ -72,6 +72,9 @@
 
     <script type="text/javascript">
 
+        // ================================================================================
+        // VARIABLES
+        // ================================================================================
 
         let questionsArray = [
             "Your mind is always buzzing with unexplored ideas and plans.",
@@ -93,52 +96,43 @@
         // FUNCTION DECLARATIONS
         // ================================================================================
 
-
+        //Dynamically create all the questions and add them to the page
         function createQuestions(){
-
-            console.log("here");
 
             for (let i=0; i< questionsArray.length; i++){
 
-
-            let question = `
-                <div>
-                    <h4>Question ${i+1}</h4>
-                    <h5>${questionsArray[i]}</h5>
-
-                    <div class="form-group">
-                        <select class="form-control" id="${i}">
-                            <option value="1">1 (Strongly Disagree)</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5 (Strongly Agree)</option>
-                        </select>
+                let question = `
+                    <div>
+                        <h4>Question ${i+1}</h4>
+                        <h5>${questionsArray[i]}</h5>
+                        <div class="form-group">
+                            <select class="form-control" id="${i}">
+                                <option value="1">1 (Strongly Disagree)</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5 (Strongly Agree)</option>
+                            </select>
+                        </div>
+                        <br>
                     </div>
-                    <br>
-                </div>
-            
-            
-            `;
+                `;
 
-            $('#main-questions').append(question);
-
+                $('#main-questions').append(question);
             };
-
         }
 
+        //Compare each person and return their overall score
         function comparePeople(person1, person2){
             let score = 0;
             for(let i=0; i< questionsArray.length; i++){
                 score += compareScore(person1.scores[i], person2.scores[i]);
             }
-            // console.log("SCORE: " + score);
             return score;
         }
 
+        //Compare two individual scores
         function compareScore(num1, num2){
-
-            // console.log("Individual score: " + Math.abs(num1-num2));
             return Math.abs(num1-num2);
         }
 
@@ -149,18 +143,14 @@
 
         function showModal(friend)
         {
-
-            console.log("Showing the modal");
-            //you can do anything with data, or pass more data to this function. i set this data to modal header for example
-
+            //If the friend object is not empty, show the modal with the name and image
             if (friend){
                 $(".friend-name").html(friend.name);
                 $('.friend-image').attr('src', friend.photo);
             }
             else{
-                $(".friend-name").html("Oops! No friends yet!");
+                $(".friend-name").html("Oops! No friends yet!"); //Display when the friend object is empty if it's the first friend added
             }
-
             $('#modal').modal('show');
             
         }
@@ -170,19 +160,22 @@
         // APP LOGIC
         // ================================================================================
 
-        createQuestions();
+        createQuestions(); //Create all questions and add to the page
 
         //Submit button handler 
         $(document).on('click', '#submit-button', function(){
-            console.log("button was pressed");
 
             //Declare variables for the friend object 
             let name = $('#name-field').val().trim();
             let image = $('#image-field').val().trim();
 
-            
+            let containsImg = false;
+
+            if (image.includes('.jpg') || image.includes('.jpeg') || image.includes('.png')){
+                containsImg = true;
+            }
                
-            if (name && image){
+            if (name && containsImg){
 
                 let answersArray = [];
                 for(let i=0; i< questionsArray.length; i++){
@@ -200,47 +193,37 @@
                 };
 
                 //Pull all the previous friend objects and compare for compatibility 
-
                 $.get("/api/friends", function(data){
 
                     let allFriends = data;
-
                     let friendScores = [];
 
-                    // console.log("All friends: " + JSON.stringify(allFriends)) ;
                     allFriends.forEach(function (friend){
-
                         let curScore = comparePeople(currentFriend, friend);
                         friendScores.push(curScore);
 
                     })
 
-                    console.log("Friend Scores Array: " + friendScores);
                     let minScore = Array.min(friendScores); //Find the lowest comparison in the array
 
-                    console.log("Min score: " + minScore);
                     let minIndex = friendScores.findIndex(function(element){
                         return element === minScore;
                     }); //Find the index of the object of the lowest score
-
-                    console.log("This is the most compatible: " + JSON.stringify(allFriends[minIndex]));
 
                     mostCompatible = allFriends[minIndex];
                 })
 
                 //Post the friend object 
                 $.post("/api/friends", currentFriend, function(data){
-                    console.log("posted the friend");
+                    console.log("POST success!");
                 }).then(function(){
                     showModal(mostCompatible);
                 });
 
             }
-            else{
-                console.log("empty params");
+            else{ //If name was not entered or a bad link, do not show modal
                 $("#modal").modal('hide');
-                alert("Please enter all fields!")
-
+                alert("Please enter all fields in the correct format!")
             }
 
 
@@ -251,9 +234,9 @@
     
     </script>
       
-      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 </body>
 </html>
